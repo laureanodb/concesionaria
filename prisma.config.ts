@@ -8,6 +8,8 @@ export default defineConfig({
     seed: "tsx prisma/seed.ts",
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
+    // Las migraciones necesitan una conexión directa (o el pooler en modo "session", puerto 5432):
+    // el modo "transaction" de Supabase no las soporta.
+    url: process.env["DIRECT_URL"] || process.env["POSTGRES_URL_NON_POOLING"] || process.env["DATABASE_URL"],
   },
 });

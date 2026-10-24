@@ -12,16 +12,16 @@ Web pública y panel de administración de la concesionaria.
 
 ## Tecnologías
 
-Next.js 16 (App Router, TypeScript), Tailwind CSS 4, Prisma 7 y PostgreSQL. Fotos en Vercel Blob.
+Next.js 16 (App Router, TypeScript), Tailwind CSS 4, Prisma 7 y Supabase (base PostgreSQL y fotos en Supabase Storage). Se publica en Vercel.
 
 ## Cómo correrlo en tu compu
 
-Requisitos: [Node.js](https://nodejs.org) 20 o superior y una base PostgreSQL. La más simple es
-crear una gratis en [Neon](https://neon.tech) y copiar su "connection string".
+Requisitos: [Node.js](https://nodejs.org) 20 o superior y un proyecto de [Supabase](https://supabase.com)
+(región São Paulo). En `.env.example` está explicado de dónde sale cada dato.
 
 ```bash
 npm install
-cp .env.example .env      # completá DATABASE_URL y SESSION_SECRET
+cp .env.example .env      # completá los datos de Supabase y SESSION_SECRET
 npm run db:setup          # crea las tablas y el usuario admin (con SEED_SAMPLE_VEHICLES="true", también autos de ejemplo)
 npm run dev
 ```
@@ -68,18 +68,18 @@ Permisos: los vendedores ven y trabajan todo, pero solo un administrador puede e
 - Los autos **vendidos** o **no publicados** no aparecen en la web.
 - El formulario público tiene protección básica contra spam: un campo trampa y un máximo de 5 consultas cada 10 minutos por conexión.
 - Los teléfonos se guardan solo con números. Los links de WhatsApp agregan el 549 automáticamente a los celulares argentinos.
-- En tu compu las fotos se guardan en la carpeta `uploads/` (no se sube a git). En Vercel van a Vercel Blob.
+- Las fotos van al bucket público `fotos` de Supabase Storage (se crea solo). Sin las claves de Supabase se guardan en la carpeta `uploads/`, útil para probar.
 - Las fotos se achican en el navegador antes de subirse (lado mayor de 1920 px, formato WebP).
 - Seguridad del login: después de 5 intentos fallidos, la cuenta queda bloqueada 15 minutos.
 
 ## Publicar en Vercel
 
-1. En [vercel.com](https://vercel.com), **Add New → Project** e importá este repositorio de GitHub.
-2. Antes del primer deploy, en el proyecto, abrí **Storage** y creá:
-   - una base **Neon (Postgres)**, que carga `DATABASE_URL` sola;
-   - un **Blob store público**, que carga `BLOB_READ_WRITE_TOKEN` sola.
-3. En **Settings → Environment Variables** agregá `SESSION_SECRET` (una clave nueva, no la de tu compu) y
-   tus datos de contacto (`NEXT_PUBLIC_WHATSAPP_NUMBER`, `NEXT_PUBLIC_CONTACT_PHONE`, etc.).
+1. En [supabase.com](https://supabase.com) creá un proyecto en la región **South America (São Paulo)**.
+   Guardá la contraseña de la base.
+2. En [vercel.com](https://vercel.com), **Add New → Project** e importá este repositorio de GitHub.
+3. En **Settings → Environment Variables** cargá las variables de `.env.example`: `DATABASE_URL`,
+   `DIRECT_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SESSION_SECRET` (una clave nueva) y
+   los datos de contacto.
 4. Hacé el deploy. El build crea las tablas solo (`npm run vercel-build`).
 5. Entrá a `/admin`: la primera vez te pide crear el usuario administrador.
 6. Opcional: en **Settings → Domains** conectá tu dominio y cargá `NEXT_PUBLIC_SITE_URL` con él.

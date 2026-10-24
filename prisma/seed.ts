@@ -2,9 +2,10 @@ import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcryptjs";
 import { PrismaClient } from "../src/generated/prisma/client";
+import { databaseConfig } from "../src/lib/db-config";
 import { slugify } from "../src/lib/format";
 
-const db = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }) });
+const db = new PrismaClient({ adapter: new PrismaPg(databaseConfig()) });
 
 const SAMPLE_VEHICLES = [
   { brand: "Toyota", model: "Corolla", version: "2.0 XEI CVT", year: 2022, km: 38000, price: 24500, currency: "USD", condition: "USADO", fuel: "NAFTA", transmission: "AUTOMATICA", bodyType: "SEDAN", color: "Gris plata", doors: 4, featured: true, description: "Único dueño, services oficiales al día. Cubiertas nuevas." },
