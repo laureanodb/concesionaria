@@ -1,0 +1,22 @@
+import type { Metadata } from "next";
+import { Geist } from "next/font/google";
+import { SITE_NAME } from "@/lib/constants";
+import "./globals.css";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+  title: { default: `${SITE_NAME} | Autos 0 km y usados`, template: `%s | ${SITE_NAME}` },
+  description: `${SITE_NAME}: autos 0 km y usados seleccionados. Financiación y tomamos tu usado.`,
+};
+
+export default function RootLayout({ children }: LayoutProps<"/">) {
+  return (
+    <html lang="es-AR" className={`${geistSans.variable} h-full`}>
+      <body className="flex min-h-full flex-col">{children}</body>
+    </html>
+  );
+}

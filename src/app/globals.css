@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --color-brand-50: #fef2f2;
+  --color-brand-100: #fde3e3;
+  --color-brand-200: #f9c2c5;
+  --color-brand-500: #e0242f;
+  --color-brand-600: #c81e28;
+  --color-brand-700: #a3161f;
+  --color-ink-900: #0f1724;
+  --color-ink-800: #1b2533;
+  --color-ink-700: #2b3646;
+}
+
+body {
+  @apply bg-white text-ink-900 antialiased;
+}
+
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60;
+}
+
+@utility btn-primary {
+  @apply btn bg-brand-600 text-white hover:bg-brand-700;
+}
+
+@utility btn-dark {
+  @apply btn bg-ink-900 text-white hover:bg-ink-700;
+}
+
+@utility btn-outline {
+  @apply btn border border-slate-300 bg-white text-ink-900 hover:bg-slate-50;
+}
+
+@utility btn-whatsapp {
+  @apply btn bg-[#25d366] text-white hover:bg-[#1ebe5b];
+}
+
+@utility input {
+  @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-ink-900 placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 focus:outline-none;
+}
+
+@utility field-label {
+  @apply mb-1 block text-sm font-medium text-slate-700;
+}
+
+@utility card {
+  @apply rounded-xl border border-slate-200 bg-white shadow-sm;
+}
