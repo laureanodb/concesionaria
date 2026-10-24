@@ -29,7 +29,7 @@ export default function HomePage() {
               <Link href="/autos" className="btn-primary px-6 py-3 text-base">
                 Ver catálogo
               </Link>
-              <Link href="/#contacto" className="btn border border-white/30 px-6 py-3 text-base text-white hover:bg-white/10">
+              <Link href="/contacto" className="btn border border-white/30 px-6 py-3 text-base text-white hover:bg-white/10">
                 Contactanos
               </Link>
             </div>

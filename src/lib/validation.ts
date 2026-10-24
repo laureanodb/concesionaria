@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { BODY_TYPES, CONDITIONS, CURRENCIES, FUELS, ROLES, STATUSES, TRANSMISSIONS } from "./constants";
+import {
+  BODY_TYPES, CONDITIONS, CURRENCIES, FUELS, LEAD_SOURCES, LEAD_STATUSES, LEAD_TYPES,
+  PAYMENT_METHODS, ROLES, STATUSES, TRANSMISSIONS,
+} from "./constants";
+import { phoneDigits } from "./format";
 
 const keys = <T extends Record<string, string>>(map: T) =>
   Object.keys(map) as [keyof T & string, ...(keyof T & string)[]];
@@ -80,6 +84,87 @@ export const userSchema = z.object({
   password: z.string().min(8, "La contraseña debe tener al menos 8 caracteres").max(100),
   role: z.enum(keys(ROLES)),
 });
+
+const phone = z
+  .string()
+  .trim()
+  .min(6, "Ingresá un teléfono válido")
+  .max(30, "Ingresá un teléfono válido")
+  .regex(/^[\d\s()+-]+$/, "Ingresá un teléfono válido")
+  // Se guarda solo con dígitos para poder reconocer al mismo cliente.
+  .transform(phoneDigits)
+  .pipe(z.string().min(6, "Ingresá un teléfono válido"));
+
+const optionalEmail = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .max(100)
+  .refine((v) => v === "" || z.email().safeParse(v).success, "Email inválido")
+  .transform((v) => (v === "" ? null : v));
+
+const optionalId = z
+  .string()
+  .trim()
+  .transform((v) => (v === "" ? null : v));
+
+/** Consulta enviada desde la web pública. */
+export const publicLeadSchema = z.object({
+  type: z.enum(keys(LEAD_TYPES)),
+  name: z.string().trim().min(2, "Ingresá tu nombre").max(80),
+  phone,
+  email: optionalEmail,
+  message: optionalText(1500),
+  preferredDate: optionalText(80),
+  vehicleId: optionalId,
+});
+
+/** Consulta cargada a mano desde el panel (por teléfono, en el salón, etc.). */
+export const adminLeadSchema = publicLeadSchema.extend({
+  source: z.enum(keys(LEAD_SOURCES)),
+  assignedToId: optionalId,
+});
+
+export const leadUpdateSchema = z.object({
+  status: z.enum(keys(LEAD_STATUSES)),
+  assignedToId: optionalId,
+  notes: optionalText(3000),
+});
+
+export const customerSchema = z.object({
+  name: z.string().trim().min(2, "Ingresá el nombre").max(80),
+  phone: z.union([z.literal("").transform(() => null), phone]),
+  email: optionalEmail,
+  dni: optionalText(20),
+  address: optionalText(150),
+  notes: optionalText(3000),
+});
+
+export const saleSchema = z
+  .object({
+    vehicleId: z.string().min(1, "Elegí el vehículo"),
+    customerId: optionalId,
+    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Fecha inválida"),
+    price: integer("Precio inválido").pipe(z.number().positive("Ingresá el precio")),
+    currency: z.enum(keys(CURRENCIES)),
+    paymentMethod: z.enum(keys(PAYMENT_METHODS)),
+    tradeIn: optionalText(150),
+    tradeInValue: z
+      .string()
+      .trim()
+      .transform((v) => v.replace(/[.\s]/g, ""))
+      .pipe(z.union([z.literal("").transform(() => null), z.string().regex(/^\d+$/, "Valor inválido").transform(Number)])),
+    notes: optionalText(3000),
+  })
+  .refine((v) => v.tradeInValue === null || v.tradeIn !== null, {
+    message: "Describí el usado recibido",
+    path: ["tradeIn"],
+  });
+
+/** Lee los campos de texto de un formulario como un objeto (los que faltan quedan en ""). */
+export function formValues(formData: FormData, fields: readonly string[]) {
+  return Object.fromEntries(fields.map((f) => [f, String(formData.get(f) ?? "")]));
+}
 
 /** Primer mensaje de error por campo, para mostrar en el formulario. */
 export function fieldErrors(error: z.ZodError): Record<string, string> {

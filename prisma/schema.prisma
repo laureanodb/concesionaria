@@ -15,6 +15,8 @@ model User {
   passwordHash String
   role         String   @default("VENDEDOR")
   active       Boolean  @default(true)
+  leads        Lead[]
+  sales        Sale[]
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
@@ -41,6 +43,8 @@ model Vehicle {
   published    Boolean        @default(true)
   featured     Boolean        @default(false)
   images       VehicleImage[]
+  leads        Lead[]
+  sales        Sale[]
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
 
@@ -58,4 +62,67 @@ model VehicleImage {
   createdAt DateTime @default(now())
 
   @@index([vehicleId, position])
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String?
+  email     String?
+  dni       String?
+  address   String?
+  notes     String?
+  leads     Lead[]
+  sales     Sale[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([phone])
+  @@index([email])
+}
+
+// Consulta que llega desde la web o que carga un vendedor.
+model Lead {
+  id            String    @id @default(cuid())
+  type          String    @default("CONSULTA") // "CONSULTA" | "TEST_DRIVE"
+  source        String    @default("WEB") // "WEB" | "WHATSAPP" | "TELEFONO" | "PRESENCIAL"
+  status        String    @default("NUEVO") // "NUEVO" | "CONTACTADO" | "CERRADO" | "DESCARTADO"
+  name          String
+  phone         String
+  email         String?
+  message       String?
+  preferredDate String? // Día/horario preferido para el test drive (texto libre)
+  notes         String? // Notas internas del vendedor
+  vehicleId     String?
+  vehicle       Vehicle?  @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  customerId    String?
+  customer      Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  assignedToId  String?
+  assignedTo    User?     @relation(fields: [assignedToId], references: [id], onDelete: SetNull)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([status, createdAt])
+  @@index([assignedToId])
+}
+
+model Sale {
+  id            String   @id @default(cuid())
+  vehicleId     String
+  vehicle       Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  customerId    String
+  customer      Customer @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  sellerId      String?
+  seller        User?    @relation(fields: [sellerId], references: [id], onDelete: SetNull)
+  date          DateTime @default(now())
+  price         Int
+  currency      String   @default("USD")
+  paymentMethod String   @default("CONTADO") // "CONTADO" | "FINANCIADO" | "MIXTO"
+  // Usado recibido como parte de pago (opcional)
+  tradeIn       String?
+  tradeInValue  Int?
+  notes         String?
+  createdAt     DateTime @default(now())
+
+  @@index([date])
 }

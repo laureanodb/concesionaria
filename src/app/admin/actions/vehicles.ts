@@ -60,6 +60,9 @@ export async function saveVehicle(
 
 export async function deleteVehicle(vehicleId: string) {
   await requireUser();
+  if ((await db.sale.count({ where: { vehicleId } })) > 0) {
+    return { error: "Este vehículo tiene una venta registrada. Anulá la venta antes de eliminarlo." };
+  }
   const images = await db.vehicleImage.findMany({ where: { vehicleId }, select: { path: true } });
   await db.vehicle.delete({ where: { id: vehicleId } });
   await Promise.all(images.map((img) => deleteImage(img.path)));

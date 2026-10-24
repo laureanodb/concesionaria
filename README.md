@@ -2,8 +2,13 @@
 
 Web pública y panel de administración de la concesionaria.
 
-- **Web pública**: portada con destacados, catálogo con filtros y ficha de cada vehículo con botón de WhatsApp.
-- **Panel** (`/admin`): stock (alta, edición, baja, estados, publicar u ocultar), carga de fotos y usuarios con roles.
+- **Web pública**: portada con destacados, catálogo con filtros, ficha de cada vehículo con WhatsApp y formulario de consulta o test drive, y página de contacto.
+- **Panel** (`/admin`):
+  - **Consultas**: bandeja de lo que llega por la web, más las que se cargan a mano. Tienen estado, vendedor asignado y notas.
+  - **Clientes**: ficha con datos e historial de consultas y compras.
+  - **Ventas**: registro de cada operación (precio final, forma de pago, usado recibido) y totales por mes.
+  - **Stock**: alta, edición y baja de autos, estados, publicar u ocultar, y fotos.
+  - **Usuarios**: roles de administrador y vendedor.
 
 ## Tecnologías
 
@@ -46,10 +51,22 @@ src/lib/                base de datos, sesión, validaciones, consultas y format
 src/proxy.ts            protege las rutas /admin
 ```
 
+## Cómo funciona el circuito comercial
+
+1. Un cliente deja una consulta o pide un test drive desde la web. Aparece en **Consultas** como *Nueva* y el menú muestra cuántas hay sin atender.
+2. El vendedor la abre, responde por WhatsApp con un clic (el mensaje ya viene armado), la marca como *Contactada* y anota el seguimiento.
+3. Con **Crear ficha de cliente**, la persona queda registrada. Si ya existía (mismo email, o mismo teléfono y nombre), se reutiliza su ficha.
+4. **Registrar venta** marca el auto como *Vendido*, lo saca de la web y cierra las consultas abiertas de ese cliente por ese auto.
+5. Si hubo un error, un administrador puede **anular la venta** y el auto vuelve a estar disponible.
+
+Permisos: los vendedores ven y trabajan todo, pero solo un administrador puede eliminar consultas o clientes, anular ventas y gestionar usuarios.
+
 ## Notas
 
 - Lo que se muestra en la web pública queda en caché y se actualiza solo cada vez que se modifica el stock desde el panel.
 - Los autos **vendidos** o **no publicados** no aparecen en la web.
+- El formulario público tiene protección básica contra spam: un campo trampa y un máximo de 5 consultas cada 10 minutos por conexión.
+- Los teléfonos se guardan solo con números. Los links de WhatsApp agregan el 549 automáticamente a los celulares argentinos.
 - Las fotos se guardan en la carpeta `uploads/`, y la base de datos en `prisma/dev.db`. Ninguna de las dos se sube a git.
 
 ## Para publicarla (más adelante)

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Gallery } from "@/components/site/Gallery";
+import { LeadForm } from "@/components/site/LeadForm";
 import { ConditionBadge, StatusBadge } from "@/components/site/StatusBadge";
 import { BODY_TYPES, CONTACT, FUELS, TRANSMISSIONS, label } from "@/lib/constants";
 import { formatKm, formatPrice, vehicleTitle, whatsappLink } from "@/lib/format";
@@ -85,6 +86,12 @@ async function VehicleDetail({ params }: Pick<PageProps<"/autos/[slug]">, "param
             Aceptamos tu usado como parte de pago. Consultá por planes de financiación.
           </p>
         </div>
+        {!sold && (
+          <div className="card mt-4 p-5">
+            <h2 className="mb-3 font-semibold">¿Te interesa? Dejanos tus datos</h2>
+            <LeadForm vehicleId={vehicle.id} defaultMessage={`Hola, me interesa el ${title} ${vehicle.year}.`} />
+          </div>
+        )}
       </aside>
     </div>
   );

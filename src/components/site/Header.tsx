@@ -7,7 +7,7 @@ const NAV = [
   { href: "/autos", label: "Catálogo" },
   { href: "/autos?condicion=NUEVO", label: "0 km" },
   { href: "/autos?condicion=USADO", label: "Usados" },
-  { href: "/#contacto", label: "Contacto" },
+  { href: "/contacto", label: "Contacto" },
 ];
 
 export function Header() {

@@ -47,3 +47,25 @@ export const CONTACT = {
 export function label<T extends Record<string, string>>(map: T, key: string): string {
   return (map as Record<string, string>)[key] ?? key;
 }
+
+export const LEAD_TYPES = { CONSULTA: "Consulta", TEST_DRIVE: "Test drive" } as const;
+
+export const LEAD_SOURCES = {
+  WEB: "Web",
+  WHATSAPP: "WhatsApp",
+  TELEFONO: "Teléfono",
+  PRESENCIAL: "Presencial",
+} as const;
+
+export const LEAD_STATUSES = {
+  NUEVO: "Nueva",
+  CONTACTADO: "Contactada",
+  CERRADO: "Cerrada",
+  DESCARTADO: "Descartada",
+} as const;
+
+export const PAYMENT_METHODS = {
+  CONTADO: "Contado",
+  FINANCIADO: "Financiado",
+  MIXTO: "Mixto (parte usado / financiado)",
+} as const;

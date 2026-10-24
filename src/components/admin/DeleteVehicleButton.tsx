@@ -11,7 +11,10 @@ export function DeleteVehicleButton({ vehicleId }: { vehicleId: string }) {
       disabled={pending}
       onClick={() => {
         if (confirm("¿Eliminar este vehículo y todas sus fotos? Esta acción no se puede deshacer.")) {
-          startTransition(() => deleteVehicle(vehicleId));
+          startTransition(async () => {
+            const result = await deleteVehicle(vehicleId);
+            if (result?.error) alert(result.error);
+          });
         }
       }}
       className="btn border border-brand-200 bg-white text-brand-700 hover:bg-brand-50"

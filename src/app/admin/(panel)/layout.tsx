@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { Logo } from "@/components/site/Logo";
 import { requireUser } from "@/lib/auth";
 import { ROLES, label } from "@/lib/constants";
+import { db } from "@/lib/db";
 import { logout } from "../actions/auth";
 
 export const metadata: Metadata = {
@@ -30,8 +31,12 @@ export default function PanelLayout({ children }: LayoutProps<"/admin">) {
 
 async function PanelNav() {
   const user = await requireUser();
+  const newLeads = await db.lead.count({ where: { status: "NUEVO" } });
   const items = [
     { href: "/admin", label: "Resumen" },
+    { href: "/admin/consultas", label: "Consultas", badge: newLeads },
+    { href: "/admin/clientes", label: "Clientes" },
+    { href: "/admin/ventas", label: "Ventas" },
     { href: "/admin/vehiculos", label: "Stock" },
     { href: "/admin/vehiculos/nuevo", label: "Cargar vehículo" },
     ...(user.role === "ADMIN" ? [{ href: "/admin/usuarios", label: "Usuarios" }] : []),
@@ -40,8 +45,13 @@ async function PanelNav() {
     <>
       <nav className="flex flex-wrap gap-1 text-sm md:flex-col">
         {items.map((item) => (
-          <Link key={item.href} href={item.href} className="rounded-lg px-3 py-2 hover:bg-ink-700">
+          <Link key={item.href} href={item.href} className="flex items-center justify-between gap-2 rounded-lg px-3 py-2 hover:bg-ink-700">
             {item.label}
+            {"badge" in item && item.badge ? (
+              <span className="rounded-full bg-brand-600 px-2 text-xs font-bold text-white" aria-label={`${item.badge} nuevas`}>
+                {item.badge}
+              </span>
+            ) : null}
           </Link>
         ))}
         <a href="/" target="_blank" className="rounded-lg px-3 py-2 hover:bg-ink-700">
