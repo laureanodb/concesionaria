@@ -1,17 +1,15 @@
 import "server-only";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/generated/prisma/client";
 
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
 function createClient() {
-  const adapter = new PrismaBetterSqlite3({
-    url: process.env.DATABASE_URL ?? "file:./prisma/dev.db",
-  });
-  return new PrismaClient({ adapter });
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) throw new Error("Falta la variable DATABASE_URL");
+  return new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
 }
 
-// En desarrollo se reutiliza la instancia para no abrir conexiones en cada recarga.
+// Se reutiliza la instancia entre recargas (desarrollo) y entre pedidos de una misma función (Vercel).
 export const db = globalForPrisma.prisma ?? createClient();
-
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = db;
+globalForPrisma.prisma = db;

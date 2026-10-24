@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { VehicleCard } from "@/components/site/VehicleCard";
-import { BODY_TYPES } from "@/lib/constants";
+import { BODY_TYPES, CONTACT, SITE_NAME } from "@/lib/constants";
+import { jsonLd, siteUrl } from "@/lib/site";
 import { getFeaturedVehicles } from "@/lib/vehicles";
 
 const BENEFITS = [
@@ -13,6 +14,18 @@ const BENEFITS = [
 export default function HomePage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={jsonLd({
+          "@context": "https://schema.org",
+          "@type": "AutoDealer",
+          name: SITE_NAME,
+          url: siteUrl(),
+          telephone: CONTACT.phone,
+          email: CONTACT.email,
+          address: { "@type": "PostalAddress", streetAddress: CONTACT.address, addressCountry: "AR" },
+        })}
+      />
       <section className="bg-ink-900 text-white">
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-16 md:py-24">
           <div className="max-w-2xl space-y-5">

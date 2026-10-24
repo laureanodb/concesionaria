@@ -29,3 +29,18 @@ export async function toggleUserActive(userId: string) {
   await db.user.update({ where: { id: userId }, data: { active: !user.active } });
   refresh();
 }
+
+export type ResetPasswordState = { error?: string; ok?: boolean };
+
+/** El administrador define una contraseña nueva para un usuario (también para sí mismo). */
+export async function resetUserPassword(
+  userId: string,
+  _prev: ResetPasswordState,
+  formData: FormData,
+): Promise<ResetPasswordState> {
+  await requireAdmin();
+  const parsed = userSchema.shape.password.safeParse(formData.get("password"));
+  if (!parsed.success) return { error: parsed.error.issues[0].message };
+  await db.user.update({ where: { id: userId }, data: { passwordHash: await bcrypt.hash(parsed.data, 10) } });
+  return { ok: true };
+}

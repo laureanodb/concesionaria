@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { PageHeader, PanelSkeleton } from "@/components/admin/PageHeader";
+import { ResetPasswordForm } from "@/components/admin/ResetPasswordForm";
 import { UserForm } from "@/components/admin/UserForm";
 import { requireAdmin } from "@/lib/auth";
 import { ROLES, label } from "@/lib/constants";
@@ -26,7 +27,7 @@ async function Users() {
   return (
     <div className="space-y-6">
       <div className="card overflow-x-auto">
-        <table className="w-full min-w-[560px] text-sm">
+        <table className="w-full min-w-[720px] text-sm">
           <thead className="border-b border-slate-200 text-left text-xs text-slate-500 uppercase">
             <tr>
               <th className="p-3">Nombre</th>
@@ -44,13 +45,16 @@ async function Users() {
                 <td className="p-3">{label(ROLES, u.role)}</td>
                 <td className="p-3">{u.active ? "Activo" : "Desactivado"}</td>
                 <td className="p-3 text-right">
-                  {u.id !== me.id && (
-                    <form action={toggleUserActive.bind(null, u.id)}>
-                      <button className="font-semibold text-brand-600 hover:underline">
-                        {u.active ? "Desactivar" : "Reactivar"}
-                      </button>
-                    </form>
-                  )}
+                  <div className="flex flex-wrap items-start justify-end gap-x-4 gap-y-2">
+                    <ResetPasswordForm userId={u.id} userName={u.name} />
+                    {u.id !== me.id && (
+                      <form action={toggleUserActive.bind(null, u.id)}>
+                        <button className="font-semibold text-brand-600 hover:underline">
+                          {u.active ? "Desactivar" : "Reactivar"}
+                        </button>
+                      </form>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}

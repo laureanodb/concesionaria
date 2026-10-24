@@ -12,16 +12,17 @@ Web pública y panel de administración de la concesionaria.
 
 ## Tecnologías
 
-Next.js 16 (App Router, TypeScript), Tailwind CSS 4, Prisma 7 y SQLite (en desarrollo).
+Next.js 16 (App Router, TypeScript), Tailwind CSS 4, Prisma 7 y PostgreSQL. Fotos en Vercel Blob.
 
 ## Cómo correrlo en tu compu
 
-Requisito: [Node.js](https://nodejs.org) 20 o superior.
+Requisitos: [Node.js](https://nodejs.org) 20 o superior y una base PostgreSQL. La más simple es
+crear una gratis en [Neon](https://neon.tech) y copiar su "connection string".
 
 ```bash
 npm install
-cp .env.example .env      # completá SESSION_SECRET (el comando para generarla está en el archivo)
-npm run db:setup          # crea la base de datos, el usuario admin y autos de ejemplo
+cp .env.example .env      # completá DATABASE_URL y SESSION_SECRET
+npm run db:setup          # crea las tablas y el usuario admin (con SEED_SAMPLE_VEHICLES="true", también autos de ejemplo)
 npm run dev
 ```
 
@@ -67,10 +68,19 @@ Permisos: los vendedores ven y trabajan todo, pero solo un administrador puede e
 - Los autos **vendidos** o **no publicados** no aparecen en la web.
 - El formulario público tiene protección básica contra spam: un campo trampa y un máximo de 5 consultas cada 10 minutos por conexión.
 - Los teléfonos se guardan solo con números. Los links de WhatsApp agregan el 549 automáticamente a los celulares argentinos.
-- Las fotos se guardan en la carpeta `uploads/`, y la base de datos en `prisma/dev.db`. Ninguna de las dos se sube a git.
+- En tu compu las fotos se guardan en la carpeta `uploads/` (no se sube a git). En Vercel van a Vercel Blob.
+- Las fotos se achican en el navegador antes de subirse (lado mayor de 1920 px, formato WebP).
+- Seguridad del login: después de 5 intentos fallidos, la cuenta queda bloqueada 15 minutos.
 
-## Para publicarla (más adelante)
+## Publicar en Vercel
 
-1. Base de datos: pasar a PostgreSQL (por ejemplo Neon, que tiene plan gratis). Hay que cambiar `provider` en el esquema y usar `@prisma/adapter-pg`.
-2. Fotos: guardarlas en Vercel Blob o Cloudinary. Solo cambia `src/lib/storage.ts`.
-3. Deploy en Vercel, cargando las variables del `.env`.
+1. En [vercel.com](https://vercel.com), **Add New → Project** e importá este repositorio de GitHub.
+2. Antes del primer deploy, en el proyecto, abrí **Storage** y creá:
+   - una base **Neon (Postgres)**, que carga `DATABASE_URL` sola;
+   - un **Blob store público**, que carga `BLOB_READ_WRITE_TOKEN` sola.
+3. En **Settings → Environment Variables** agregá `SESSION_SECRET` (una clave nueva, no la de tu compu) y
+   tus datos de contacto (`NEXT_PUBLIC_WHATSAPP_NUMBER`, `NEXT_PUBLIC_CONTACT_PHONE`, etc.).
+4. Hacé el deploy. El build crea las tablas solo (`npm run vercel-build`).
+5. Entrá a `/admin`: la primera vez te pide crear el usuario administrador.
+6. Opcional: en **Settings → Domains** conectá tu dominio y cargá `NEXT_PUBLIC_SITE_URL` con él.
+7. Activá **Analytics** en el proyecto para ver las visitas.

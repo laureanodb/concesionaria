@@ -43,9 +43,9 @@ function buildWhere(f: VehicleFilters): Prisma.VehicleWhereInput {
   if (f.q) {
     and.push({
       OR: [
-        { brand: { contains: f.q } },
-        { model: { contains: f.q } },
-        { version: { contains: f.q } },
+        { brand: { contains: f.q, mode: "insensitive" } },
+        { model: { contains: f.q, mode: "insensitive" } },
+        { version: { contains: f.q, mode: "insensitive" } },
       ],
     });
   }
@@ -135,3 +135,15 @@ export async function getPublicVehicle(slug: string) {
 }
 
 export type PublicVehicle = NonNullable<Awaited<ReturnType<typeof getPublicVehicle>>>;
+
+export async function getSitemapVehicles() {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(VEHICLES_TAG);
+
+  return db.vehicle.findMany({
+    where: publicWhere,
+    select: { slug: true, updatedAt: true },
+    orderBy: { updatedAt: "desc" },
+  });
+}

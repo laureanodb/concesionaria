@@ -32,9 +32,9 @@ async function CustomerList({ searchParams }: Pick<PageProps<"/admin/clientes">,
     where: q
       ? {
           OR: [
-            { name: { contains: q } },
-            { email: { contains: q.toLowerCase() } },
-            { dni: { contains: q } },
+            { name: { contains: q, mode: "insensitive" } },
+            { email: { contains: q, mode: "insensitive" } },
+            { dni: { contains: q, mode: "insensitive" } },
             ...(digits.length >= 3 ? [{ phone: { contains: digits } }] : []),
           ],
         }

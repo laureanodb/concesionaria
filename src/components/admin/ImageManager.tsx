@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useRef, useState, useTransition } from "react";
 import { deleteVehicleImage, moveVehicleImage, uploadVehicleImage } from "@/app/admin/actions/vehicles";
+import { compressImage } from "@/lib/compress-image";
 
 type Img = { id: string; url: string };
 
@@ -20,10 +21,14 @@ export function ImageManager({ vehicleId, images }: { vehicleId: string; images:
       const failed: string[] = [];
       for (const [i, file] of list.entries()) {
         setProgress(`Subiendo ${i + 1} de ${list.length}…`);
-        const data = new FormData();
-        data.append("file", file);
-        const result = await uploadVehicleImage(vehicleId, data);
-        if (result.error) failed.push(`${file.name}: ${result.error}`);
+        try {
+          const data = new FormData();
+          data.append("file", await compressImage(file));
+          const result = await uploadVehicleImage(vehicleId, data);
+          if (result.error) failed.push(`${file.name}: ${result.error}`);
+        } catch (e) {
+          failed.push(`${file.name}: ${e instanceof Error ? e.message : "no se pudo subir"}`);
+        }
       }
       setErrors(failed);
       setProgress(null);
@@ -38,7 +43,7 @@ export function ImageManager({ vehicleId, images }: { vehicleId: string; images:
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="font-semibold">Fotos</h2>
-          <p className="text-xs text-slate-500">La primera foto es la portada. JPG, PNG o WebP de hasta 8 MB.</p>
+          <p className="text-xs text-slate-500">La primera foto es la portada. JPG, PNG o WebP. Se achican solas antes de subirse.</p>
         </div>
         <label className={`btn-dark cursor-pointer ${pending ? "pointer-events-none opacity-60" : ""}`}>
           {progress ?? "+ Subir fotos"}

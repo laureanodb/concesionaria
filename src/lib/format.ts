@@ -50,8 +50,9 @@ export function whatsappLink(phone: string, message: string): string {
   return `https://wa.me/${toWhatsappNumber(phone)}?text=${encodeURIComponent(message)}`;
 }
 
-export function imageUrl(relativePath: string) {
-  return `/api/fotos/${relativePath}`;
+/** URL de una foto: las de Vercel Blob ya son una URL completa; las locales se sirven por /api/fotos. */
+export function imageUrl(storedPath: string) {
+  return /^https?:\/\//.test(storedPath) ? storedPath : `/api/fotos/${storedPath}`;
 }
 
 export const TIME_ZONE = "America/Argentina/Buenos_Aires";

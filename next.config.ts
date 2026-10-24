@@ -4,13 +4,15 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   images: {
-    // Solo se optimizan las fotos servidas por /api/fotos (ver src/app/api/fotos).
+    // Fotos locales (desarrollo) y de Vercel Blob (producción).
     localPatterns: [{ pathname: "/api/fotos/**", search: "" }],
+    remotePatterns: [{ protocol: "https", hostname: "*.public.blob.vercel-storage.com", pathname: "/vehiculos/**" }],
   },
   experimental: {
     serverActions: {
-      // Las fotos se suben de a una (máx. 8 MB cada una).
-      bodySizeLimit: "10mb",
+      // Las fotos se achican en el navegador y se suben de a una (máx. 4 MB).
+      // Vercel no acepta pedidos de más de 4,5 MB.
+      bodySizeLimit: "4mb",
     },
   },
   turbopack: {

@@ -39,7 +39,7 @@ async function StockTable({ searchParams }: Pick<PageProps<"/admin/vehiculos">, 
     ...(estado && { status: estado }),
     ...(unpublished && { published: false }),
     ...(q && {
-      OR: [{ brand: { contains: q } }, { model: { contains: q } }, { version: { contains: q } }],
+      OR: [{ brand: { contains: q, mode: "insensitive" } }, { model: { contains: q, mode: "insensitive" } }, { version: { contains: q, mode: "insensitive" } }],
     }),
   };
   const vehicles = await db.vehicle.findMany({

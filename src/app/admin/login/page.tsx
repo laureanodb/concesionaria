@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Logo } from "@/components/site/Logo";
+import { db } from "@/lib/db";
 import { LoginForm } from "./LoginForm";
+import { SetupForm } from "./SetupForm";
 
 export const metadata: Metadata = { title: "Ingresar al panel", robots: { index: false } };
 
@@ -15,8 +18,15 @@ export default function LoginPage() {
           <h1 className="text-xl font-bold">Panel de administración</h1>
           <p className="text-sm text-slate-500">Ingresá con tu usuario</p>
         </div>
-        <LoginForm />
+        <Suspense fallback={<div className="h-48" />}>
+          <LoginOrSetup />
+        </Suspense>
       </div>
     </main>
   );
+}
+
+async function LoginOrSetup() {
+  const users = await db.user.count();
+  return users === 0 ? <SetupForm /> : <LoginForm />;
 }

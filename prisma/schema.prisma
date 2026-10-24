@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 // Roles: "ADMIN" | "VENDEDOR" (ver src/lib/constants.ts)
@@ -125,4 +125,13 @@ model Sale {
   createdAt     DateTime @default(now())
 
   @@index([date])
+}
+
+// Registro de intentos (logins fallidos, envíos del formulario) para limitar abusos.
+model RateLimitHit {
+  id        String   @id @default(cuid())
+  key       String
+  createdAt DateTime @default(now())
+
+  @@index([key, createdAt])
 }

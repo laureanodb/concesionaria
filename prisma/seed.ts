@@ -1,12 +1,10 @@
 import "dotenv/config";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcryptjs";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { slugify } from "../src/lib/format";
 
-const db = new PrismaClient({
-  adapter: new PrismaBetterSqlite3({ url: process.env.DATABASE_URL ?? "file:./prisma/dev.db" }),
-});
+const db = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }) });
 
 const SAMPLE_VEHICLES = [
   { brand: "Toyota", model: "Corolla", version: "2.0 XEI CVT", year: 2022, km: 38000, price: 24500, currency: "USD", condition: "USADO", fuel: "NAFTA", transmission: "AUTOMATICA", bodyType: "SEDAN", color: "Gris plata", doors: 4, featured: true, description: "Único dueño, services oficiales al día. Cubiertas nuevas." },
@@ -33,7 +31,7 @@ async function main() {
     console.log(`El usuario ${email} ya existía, no se modificó.`);
   }
 
-  if ((await db.vehicle.count()) === 0) {
+  if (process.env.SEED_SAMPLE_VEHICLES === "true" && (await db.vehicle.count()) === 0) {
     for (const v of SAMPLE_VEHICLES) {
       await db.vehicle.create({
         data: { ...v, slug: slugify(`${v.brand} ${v.model} ${v.version} ${v.year}`) },

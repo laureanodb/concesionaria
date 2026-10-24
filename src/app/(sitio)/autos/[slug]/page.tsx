@@ -7,16 +7,24 @@ import { LeadForm } from "@/components/site/LeadForm";
 import { ConditionBadge, StatusBadge } from "@/components/site/StatusBadge";
 import { BODY_TYPES, CONTACT, FUELS, TRANSMISSIONS, label } from "@/lib/constants";
 import { formatKm, formatPrice, vehicleTitle, whatsappLink } from "@/lib/format";
+import { jsonLd, siteUrl } from "@/lib/site";
 import { getPublicVehicle, type PublicVehicle } from "@/lib/vehicles";
 
 export async function generateMetadata({ params }: PageProps<"/autos/[slug]">): Promise<Metadata> {
   const vehicle = await getPublicVehicle((await params).slug);
   if (!vehicle) return { title: "Vehículo no encontrado" };
   const title = `${vehicleTitle(vehicle)} ${vehicle.year}`;
+  const description = `${title} · ${formatKm(vehicle.km)} · ${formatPrice(vehicle.price, vehicle.currency)}`;
   return {
     title,
-    description: `${title} · ${formatKm(vehicle.km)} · ${formatPrice(vehicle.price, vehicle.currency)}`,
-    openGraph: { images: vehicle.images[0] ? [vehicle.images[0].url] : [] },
+    description,
+    alternates: { canonical: `/autos/${vehicle.slug}` },
+    openGraph: {
+      title: `${title} · ${formatPrice(vehicle.price, vehicle.currency)}`,
+      description: `${formatKm(vehicle.km)} · ${label(FUELS, vehicle.fuel)} · ${label(TRANSMISSIONS, vehicle.transmission)}`,
+      url: `/autos/${vehicle.slug}`,
+      images: vehicle.images[0] ? [{ url: vehicle.images[0].url, alt: title }] : [],
+    },
   };
 }
 
@@ -43,6 +51,7 @@ async function VehicleDetail({ params }: Pick<PageProps<"/autos/[slug]">, "param
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
+      <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd(vehicleJsonLd(vehicle))} />
       <div className="space-y-8">
         <Gallery images={vehicle.images} alt={title} />
         {vehicle.description && (
@@ -134,4 +143,32 @@ function DetailSkeleton() {
       <div className="card h-80 bg-slate-50" />
     </div>
   );
+}
+
+function vehicleJsonLd(vehicle: PublicVehicle) {
+  const base = siteUrl();
+  return {
+    "@context": "https://schema.org",
+    "@type": "Car",
+    name: `${vehicleTitle(vehicle)} ${vehicle.year}`,
+    brand: { "@type": "Brand", name: vehicle.brand },
+    model: vehicle.model,
+    vehicleModelDate: String(vehicle.year),
+    mileageFromOdometer: { "@type": "QuantitativeValue", value: vehicle.km, unitCode: "KMT" },
+    fuelType: label(FUELS, vehicle.fuel),
+    vehicleTransmission: label(TRANSMISSIONS, vehicle.transmission),
+    bodyType: label(BODY_TYPES, vehicle.bodyType),
+    ...(vehicle.color && { color: vehicle.color }),
+    ...(vehicle.doors && { numberOfDoors: vehicle.doors }),
+    itemCondition: vehicle.condition === "NUEVO" ? "https://schema.org/NewCondition" : "https://schema.org/UsedCondition",
+    image: vehicle.images.map((img) => (img.url.startsWith("http") ? img.url : `${base}${img.url}`)),
+    url: `${base}/autos/${vehicle.slug}`,
+    offers: {
+      "@type": "Offer",
+      price: vehicle.price,
+      priceCurrency: vehicle.currency,
+      availability: vehicle.status === "VENDIDO" ? "https://schema.org/SoldOut" : "https://schema.org/InStock",
+      seller: { "@type": "AutoDealer", name: "Automotores Laureano" },
+    },
+  };
 }
